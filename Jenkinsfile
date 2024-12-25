@@ -1,6 +1,15 @@
 pipeline {
     agent any
+    environment {
+        GITHUB_TOKEN = credentials('github-token')
+    }
     stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/yourusername/your-repo.git',
+                    credentialsId: 'github-token'
+            }
+        }
         stage('Build') {
             steps {
                 sh 'npm install'
@@ -19,10 +28,10 @@ pipeline {
     }
     post {
         success {
-            slackSend (channel: '#devops', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            slackSend(channel: '#devops', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
         failure {
-            slackSend (channel: '#devops', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            slackSend(channel: '#devops', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
     }
 }
