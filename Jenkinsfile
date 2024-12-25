@@ -30,7 +30,7 @@ pipeline {
         }
         stage('Slack notification'){
             steps{
-                slackSend channel: '#internship', message: 'Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}'
+                slackSend channel: '#internship', color: 'good' ,message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}"
 
             }
         }
