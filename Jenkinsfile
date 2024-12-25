@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        GITHUB_TOKEN = credentials('jenkins-github')
+        GITHUB_TOKEN = credentials('github-credentials')
     }
     stages {
         stage('Checkout') {
@@ -11,16 +11,19 @@ pipeline {
         }
         stage('Build') {
             steps {
+                echo 'Running npm install...'
                 sh 'npm install'
             }
         }
         stage('Test') {
             steps {
+                echo 'Running tests...'
                 sh 'npm test'
             }
         }
         stage('Deploy') {
             steps {
+                echo 'Starting application...'
                 sh 'npm start'
             }
         }
