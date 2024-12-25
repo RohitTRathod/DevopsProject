@@ -28,12 +28,28 @@ pipeline {
                 echo 'Simulating npm start (no actual deployment)'
             }
         }
-        stage('Slack notification'){
-            steps{
-                slackSend channel: '#internship', color: 'good' ,message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}"
-
+        stage('Run Docker Conatainer') {
+            steps {
+                script {
+                    // Run the Docker container
+                    sh 'docker run -d -p 3000:3000 rohittrathod/devops-project:latest' 
+                }
+            }
+        }
+        stage('Slack notification') {
+            steps {
+                slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
             }
         }
     }
-    
+    post {
+        success {
+            // Sending success message to Slack channel
+            slackSend(channel: '#internship', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+        }
+        failure {
+            // Sending failure message to Slack channel
+            slackSend(channel: '#internship', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+        }
+    }
 }
