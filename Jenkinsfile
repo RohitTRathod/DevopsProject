@@ -1,10 +1,12 @@
 pipeline {
     agent any
+    environment {
+        GITHUB_TOKEN = credentials('github-credentials')
+    }
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/RohitTRathod/DevopsProject.git',
-                    credentialsId: 'jenkins-github'
+                git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
         stage('Build') {
