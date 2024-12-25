@@ -28,15 +28,12 @@ pipeline {
                 echo 'Simulating npm start (no actual deployment)'
             }
         }
-    }
-    post {
-        success {
-            // Sending success message to Slack channel
-            slackSend(channel: '#devops', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
-        }
-        failure {
-            // Sending failure message to Slack channel
-            slackSend(channel: '#devops', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+        stage('Slack notification'){
+            steps{
+                slackSend channel: '#internship', message: 'Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}'
+
+            }
         }
     }
+    
 }
