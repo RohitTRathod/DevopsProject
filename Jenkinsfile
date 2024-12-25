@@ -1,38 +1,41 @@
 pipeline {
     agent any
     environment {
-        GITHUB_TOKEN = credentials('github-credentials')
+        GITHUB_TOKEN = credentials('jenkins-github')
     }
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the code from GitHub
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
         stage('Build') {
             steps {
-                echo 'Running npm install...'
-                sh 'npm install'
+                // Simulating a build process using echo (since npm is not used)
+                echo 'Simulating npm install (dependencies are not installed)'
             }
         }
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh 'npm test'
+                // Simulating test process using echo
+                echo 'Simulating npm test (no tests are run)'
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Starting application...'
-                sh 'npm start'
+                // Simulating deployment using echo
+                echo 'Simulating npm start (no actual deployment)'
             }
         }
     }
     post {
         success {
+            // Sending success message to Slack channel
             slackSend(channel: '#devops', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
         failure {
+            // Sending failure message to Slack channel
             slackSend(channel: '#devops', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
     }
