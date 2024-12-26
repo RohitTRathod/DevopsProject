@@ -31,9 +31,7 @@ pipeline {
         stage('Run Docker Conatainer') {
             steps {
                 script {
-                    // Run the Docker container
-                    sh 'docker pull rohittrathod/devops-project:latest'
-                    sh 'docker run -d -p 3000:3000 rohittrathod/devops-project:latest' 
+                    sh 'docker --version'
                 }
             }
         }
