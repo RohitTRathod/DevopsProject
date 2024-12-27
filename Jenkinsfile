@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        GITHUB_TOKEN = credentials('jenkins-github')
+        GITHUB_TOKEN = credentials('jenkins-github')  // Ensure this credential ID is correct
     }
     stages {
         stage('Checkout') {
@@ -28,7 +28,6 @@ pipeline {
                 echo 'Simulating npm start (no actual deployment)'
             }
         }
-        stages {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
@@ -39,15 +38,13 @@ pipeline {
                 }
             }
         }
-
         stage('Run Docker Container') {
             steps {
                 // Run the Docker container
                 bat 'docker run -d -p 8080:8080 rohittrathod/devops-project'
             }
         }
-    }
-        stage('Slack notification') {
+        stage('Slack Notification') {
             steps {
                 slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
             }
