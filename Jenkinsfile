@@ -1,7 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
     environment {
-        GITHUB_TOKEN = credentials('jenkins-github')
+        DOCKER_CREDENTIALS_ID = credentials('jenkins-docker') // Replace with the ID of your Docker credentials
+        SLACK_CHANNEL = '#internship'
     }
     stages {
         stage('Checkout') {
@@ -10,45 +16,42 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-        stage('Build') {
-            steps {
-                // Simulating a build process using echo (since npm is not used)
-                echo 'Simulating npm install (dependencies are not installed)'
-            }
-        }
-        stage('Test') {
-            steps {
-                // Simulating test process using echo
-                echo 'Simulating npm test (no tests are run)'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Simulating deployment using echo
-                echo 'Simulating npm start (no actual deployment)'
-            }
-        }
-        stage('Run Docker Conatainer') {
+        stage('Login to Docker Hub') {
             steps {
                 script {
-                    sh 'docker --version'
+                    withCredentials([usernamePassword(credentialsId: env.DOCKER_CREDENTIALS_ID, passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    }
+                }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    // Pull and run the Docker container
+                    sh 'docker pull rohittrathod/devops-project:latest'
+                    sh 'docker run -d -p 3000:3000 rohittrathod/devops-project:latest'
                 }
             }
         }
         stage('Slack notification') {
             steps {
-                slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
+                slackSend(channel: SLACK_CHANNEL, color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
             }
         }
     }
     post {
         success {
             // Sending success message to Slack channel
-            slackSend(channel: '#internship', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            script {
+                slackSend(channel: SLACK_CHANNEL, color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            }
         }
         failure {
             // Sending failure message to Slack channel
-            slackSend(channel: '#internship', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            script {
+                slackSend(channel: SLACK_CHANNEL, color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            }
         }
     }
 }
