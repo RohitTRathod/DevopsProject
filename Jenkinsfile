@@ -10,22 +10,12 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                // Simulating a build process using echo (since npm is not used)
-                echo 'Simulating npm install (dependencies are not installed)'
-            }
-        }
-        stage('Test') {
-            steps {
-                // Simulating test process using echo
-                echo 'Simulating npm test (no tests are run)'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Simulating deployment using echo
-                echo 'Simulating npm start (no actual deployment)'
+                container('docker') {
+                    // Build the Docker image
+                    sh 'docker build -t yourapp:latest .' // Use a local tag
+                }
             }
         }
         stage('Docker Login') {
@@ -33,15 +23,31 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
                                                   usernameVariable: 'DOCKER_USERNAME', 
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
-                    // Log in to Docker Hub
-                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    container('docker') {
+                        // Log in to Docker Hub
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                    }
                 }
             }
         }
-        stage('Run Docker Container') {
+        stage('Push Docker Image') {
             steps {
-                // Run the Docker container
-                sh 'docker run -d -p 8085:8080 rohittrathod/devops-project'
+                container('docker') {
+                    // Push the Docker image to Docker Hub
+                    sh 'docker push yourusername/yourapp:latest' // Replace with your Docker image name
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    // Deploy to Kubernetes
+                    sh '''
+                    kubectl apply -f kubernetes/deployment.yaml
+                    kubectl apply -f kubernetes/service.yaml
+                    kubectl rollout status deployment/yourapp-deployment
+                    '''
+                }
             }
         }
         stage('Slack Notification') {
