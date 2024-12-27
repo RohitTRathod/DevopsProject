@@ -34,14 +34,14 @@ pipeline {
                                                   usernameVariable: 'DOCKER_USERNAME', 
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
                     // Log in to Docker Hub
-                    bat "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
                 }
             }
         }
         stage('Run Docker Container') {
             steps {
                 // Run the Docker container
-                bat 'docker run -d -p 8083:8080 rohittrathod/devops-project'
+                sh 'docker run -d -p 8085:8080 rohittrathod/devops-project'
             }
         }
         stage('Slack Notification') {
