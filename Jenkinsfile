@@ -28,7 +28,7 @@ pipeline {
                 echo 'Simulating npm start (no actual deployment)'
             }
         }
-        sstages {
+        stages {
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
