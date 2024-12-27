@@ -41,7 +41,7 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 // Run the Docker container
-                bat 'docker run -d -p 8080:8080 rohittrathod/devops-project'
+                bat 'docker run -d -p 8081:8080 rohittrathod/devops-project'
             }
         }
         stage('Slack Notification') {
