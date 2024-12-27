@@ -20,53 +20,45 @@ pipeline {
         }
     }
     environment {
-        DOCKER_CREDENTIALS_ID = credentials('dockerHubCredentials')
+        GITHUB_TOKEN = credentials('jenkins-github') // Ensure this credential ID is correct
     }
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the code from GitHub
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-        stage('Build Docker Image') {
+         stage('Run Docker Container') {
             steps {
-                container('docker') {
-                    sh 'docker build -t rohittrathod/devops-project:latest .'
-                }
+                // Run the Docker container
+                bat 'docker run -d -p 8084:8080 rohittrathod/devops-project'
             }
         }
-        stage('Docker Login') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials',
-                                                  usernameVariable: 'DOCKER_USERNAME',
-                                                  passwordVariable: 'DOCKER_PASSWORD')]) {
-                    container('docker') {
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
-                    }
-                }
-            }
-        }
-        stage('Push Docker Image') {
-            steps {
-                container('docker') {
-                    sh 'docker push rohittrathod/devops-project:latest'
-                }
-            }
-        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    sh 'kubectl apply -f kubernetes/deployment.yaml'
+                    // Load the Docker image into Minikube
+                    sh 'minikube image load yourapp:latest'
+                    
+                    // Update the Kubernetes deployment to use the locally built image
+                    sh '''
+                    kubectl set image deployment/yourapp-deployment yourapp=yourapp:latest
+                    kubectl rollout status deployment/yourapp-deployment
+                    '''
                 }
             }
         }
     }
     post {
         success {
-            slackSend(channel: '#internship', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            // Sending success message to Slack channel
+            slackSend(channel: '#internship', color: 'good', message: "Build and deployment succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
         failure {
-            slackSend(channel: '#internship', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            // Sending failure message to Slack channel
+            slackSend(channel: '#internship', color: 'danger', message: "Build and deployment failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
     }
 }
