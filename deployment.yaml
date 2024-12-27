@@ -1,44 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devops-project
-  labels:
-    app: devops-project
+  name: devops-deployment
 spec:
-  replicas: 3  # Number of replicas
+  replicas: 3
   selector:
     matchLabels:
-      app: devops-project
+      app: devops
   template:
     metadata:
       labels:
-        app: devops-project
+        app: devops
     spec:
       containers:
-      - name: devops-project
-        image: rohittrathod/devops-project:latest  # Replace with your Docker image
+      - name: devops
+        image: rohittrathod/devops:latest # Replace with your Docker image name
         ports:
-        - containerPort: 8080  # Replace with the port your app listens on
-        env:
-        - name: GITHUB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: github-credentials  # Ensure this matches your secret name
-              key: username  # Ensure this matches your secret key
-        - name: GITHUB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: github-credentials  # Ensure this matches your secret name
-              key: password  # Ensure this matches your secret key
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: devops-project-service
-spec:
-  type: NodePort  # Change to LoadBalancer if not using Minikube
-  ports:
-  - port: 80  # Port exposed by the service
-    targetPort: 8080  # Ensure this matches the containerPort
-  selector:
-    app: devops-project
+        - containerPort: 80
+
