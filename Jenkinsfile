@@ -1,26 +1,7 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml '''
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-              - name: docker
-                image: docker:latest
-                command:
-                - cat
-                tty: true
-              - name: kubectl
-                image: bitnami/kubectl:latest
-                command:
-                - cat
-                tty: true
-            '''
-        }
-    }
+    agent any
     environment {
-        GITHUB_TOKEN = credentials('jenkins-github') // Ensure this credential ID is correct
+        GITHUB_TOKEN = credentials('jenkins-github')  // Ensure this credential ID is correct
     }
     stages {
         stage('Checkout') {
@@ -29,36 +10,54 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-         stage('Run Docker Container') {
+        stage('Build') {
             steps {
-                // Run the Docker container
-                bat 'docker run -d -p 8084:8080 rohittrathod/devops-project'
+                // Simulating a build process using echo (since npm is not used)
+                echo 'Simulating npm install (dependencies are not installed)'
             }
         }
-
-        stage('Deploy to Kubernetes') {
+        stage('Test') {
             steps {
-                container('kubectl') {
-                    // Load the Docker image into Minikube
-                    sh 'minikube image load yourapp:latest'
-                    
-                    // Update the Kubernetes deployment to use the locally built image
-                    sh '''
-                    kubectl set image deployment/yourapp-deployment yourapp=yourapp:latest
-                    kubectl rollout status deployment/yourapp-deployment
-                    '''
+                // Simulating test process using echo
+                echo 'Simulating npm test (no tests are run)'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // Simulating deployment using echo
+                echo 'Simulating npm start (no actual deployment)'
+            }
+        }
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
+                                                  usernameVariable: 'DOCKER_USERNAME', 
+                                                  passwordVariable: 'DOCKER_PASSWORD')]) {
+                    // Log in to Docker Hub
+                    bat "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                 }
+            }
+        }
+        stage('Run Docker Container') {
+            steps {
+                // Run the Docker container
+                bat 'docker run -d -p 8083:8080 rohittrathod/devops-project'
+            }
+        }
+        stage('Slack Notification') {
+            steps {
+                slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
             }
         }
     }
     post {
         success {
             // Sending success message to Slack channel
-            slackSend(channel: '#internship', color: 'good', message: "Build and deployment succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            slackSend(channel: '#internship', color: 'good', message: "Build succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
         failure {
             // Sending failure message to Slack channel
-            slackSend(channel: '#internship', color: 'danger', message: "Build and deployment failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
+            slackSend(channel: '#internship', color: 'danger', message: "Build failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
         }
     }
 }
