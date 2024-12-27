@@ -7,12 +7,12 @@ pipeline {
             spec:
               containers:
               - name: docker
-                image: docker:latest  // Docker image for building
+                image: docker:latest # Docker image for building
                 command:
                 - cat
                 tty: true
               - name: kubectl
-                image: bitnami/kubectl:latest  // kubectl image for Kubernetes commands
+                image: bitnami/kubectl:latest # kubectl image for Kubernetes commands
                 command:
                 - cat
                 tty: true
@@ -20,7 +20,7 @@ pipeline {
         }
     }
     environment {
-        GITHUB_TOKEN = credentials('jenkins-github')  // Ensure this credential ID is correct
+        DOCKER_CREDENTIALS_ID = credentials('dockerHubCredentials') // Ensure this credential ID is correct
     }
     stages {
         stage('Checkout') {
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 container('docker') {
                     // Build the Docker image
-                    sh 'docker build -t rohittrathod/devops-project:latest .'  // Replace with your Docker image name
+                    sh 'docker build -t rohittrathod/devops-project:latest .' // Replace with your Docker image name
                 }
             }
         }
@@ -44,7 +44,7 @@ pipeline {
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
                     container('docker') {
                         // Log in to Docker Hub
-                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
                     }
                 }
             }
@@ -53,7 +53,7 @@ pipeline {
             steps {
                 container('docker') {
                     // Push the Docker image to Docker Hub
-                    sh 'docker push rohittrathod/devops-project:latest'  // Replace with your Docker image name
+                    sh 'docker push rohittrathod/devops-project:latest' // Replace with your Docker image name
                 }
             }
         }
@@ -61,13 +61,8 @@ pipeline {
             steps {
                 container('kubectl') {
                     // Deploy to Kubernetes
-                    sh 'kubectl apply -f kubernetes/deployment.yaml'  // Ensure this path is correct
+                    sh 'kubectl apply -f kubernetes/deployment.yaml' // Ensure this path is correct
                 }
-            }
-        }
-        stage('Slack Notification') {
-            steps {
-                slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
             }
         }
     }
