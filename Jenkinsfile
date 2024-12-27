@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml '''
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: docker
+                image: docker:latest  // Docker image for building
+                command:
+                - cat
+                tty: true
+              - name: kubectl
+                image: bitnami/kubectl:latest  // kubectl image for Kubernetes commands
+                command:
+                - cat
+                tty: true
+            '''
+        }
+    }
     environment {
         GITHUB_TOKEN = credentials('jenkins-github')  // Ensure this credential ID is correct
     }
@@ -10,22 +29,12 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                // Simulating a build process using echo (since npm is not used)
-                echo 'Simulating npm install (dependencies are not installed)'
-            }
-        }
-        stage('Test') {
-            steps {
-                // Simulating test process using echo
-                echo 'Simulating npm test (no tests are run)'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                // Simulating deployment using echo
-                echo 'Simulating npm start (no actual deployment)'
+                container('docker') {
+                    // Build the Docker image
+                    sh 'docker build -t rohittrathod/devops-project:latest .'  // Replace with your Docker image name
+                }
             }
         }
         stage('Docker Login') {
@@ -33,15 +42,27 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
                                                   usernameVariable: 'DOCKER_USERNAME', 
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
-                    // Log in to Docker Hub
-                    bat "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    container('docker') {
+                        // Log in to Docker Hub
+                        sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    }
                 }
             }
         }
-        stage('Run Docker Container') {
+        stage('Push Docker Image') {
             steps {
-                // Run the Docker container
-                bat 'docker run -d -p 8083:8080 rohittrathod/devops-project'
+                container('docker') {
+                    // Push the Docker image to Docker Hub
+                    sh 'docker push rohittrathod/devops-project:latest'  // Replace with your Docker image name
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    // Deploy to Kubernetes
+                    sh 'kubectl apply -f kubernetes/deployment.yaml'  // Ensure this path is correct
+                }
             }
         }
         stage('Slack Notification') {
