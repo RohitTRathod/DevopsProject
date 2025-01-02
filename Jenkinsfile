@@ -11,6 +11,15 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
+        stage('Install Dependencies') {
+            steps {
+                // Change to the directory containing package.json if needed
+                dir('app') {  // Adjust 'app' to your actual directory
+                    bat 'npm install'  // Use 'sh' instead of 'bat' for Linux agents
+                }
+            }
+        }
+
         stage('Build and Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
