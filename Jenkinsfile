@@ -26,15 +26,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Push Docker Image') {
-            steps {
-                script {
-                    // Push the Docker image to Docker Hub
-                    sh 'docker push rohittrathod/ibmproject:latest' // Replace with your Docker image name
-                }
-            }
-        }
         stage('Deploy to Minikube') {
             steps {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
