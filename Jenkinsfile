@@ -11,43 +11,38 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/RohitTRathod/DevopsProject.git', credentialsId: 'github-credentials'
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build the Docker image
-                    sh 'docker build -t rohittrathod/devops:latest .' // Replace with your Docker image name
-                }
-            }
-        }
-        stage('Docker Login') {
+        stage('Build and Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerHubCredentials', 
                                                   usernameVariable: 'DOCKER_USERNAME', 
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
                     script {
-                        // Log in to Docker Hub
-                        sh "echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin"
+                        // Log in to Docker Hub, build and push the Docker image
+                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
+                        bat 'docker build -t rohittrathod/dockube .'
+                        bat 'docker tag rohittrathod/dockube rohittrathod/dockube:latest'
+                        bat 'docker push rohittrathod/dockube:latest'
                     }
                 }
             }
         }
+        
         stage('Push Docker Image') {
             steps {
                 script {
                     // Push the Docker image to Docker Hub
-                    sh 'docker push rohittarthod/devops:latest' // Replace with your Docker image name
+                    sh 'docker push rohittarthod/dockube:latest' // Replace with your Docker image name
                 }
             }
         }
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Minikube') {
             steps {
-                script {
-                    // Deploy to Kubernetes
-                    sh '''
-                    kubectl apply -f kubernetes/deployment.yaml
-                    kubectl apply -f kubernetes/service.yaml
-                    kubectl rollout status deployment/devops-deployment
-                    '''
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
+                    script {
+                        // Apply the Kubernetes deployment and service YAML files
+                        bat 'kubectl apply -f deployment.yaml --validate=false'  // Adjust the path as necessary
+                        bat 'kubectl apply -f service.yaml --validate=false'     // Adjust the path as necessary
+                    }
                 }
             }
         }

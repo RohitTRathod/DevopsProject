@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: devops-deployment
+  name: dockube-deployment
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: devops
+      app: dockube
   template:
     metadata:
       labels:
-        app: devops
+        app: dockube
     spec:
       containers:
-      - name: devops
-        image: rohittrathod/devops:latest # Replace with your Docker image name
+      - name: dockube
+        image: rohittrathod/dockube:latest # Replace with your Docker image name
         ports:
         - containerPort: 80
 
