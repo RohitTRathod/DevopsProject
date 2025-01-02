@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     // Push the Docker image to Docker Hub
-                    sh 'docker push rohittarthod/ibmproject:latest' // Replace with your Docker image name
+                    sh 'docker push rohittrathod/ibmproject:latest' // Replace with your Docker image name
                 }
             }
         }
