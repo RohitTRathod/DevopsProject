@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    environment {
-        GITHUB_TOKEN = credentials('jenkins-github')  // Ensure this credential ID is correct
-        DOCKER_CREDENTIALS_ID = credentials('dockerHubCredentials') // Ensure this credential ID is correct
-    }
     stages {
         stage('Checkout') {
             steps {
