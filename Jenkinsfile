@@ -25,9 +25,9 @@ pipeline {
                     script {
                         // Log in to Docker Hub, build and push the Docker image
                         bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
-                        bat 'docker build -t rohittrathod/ibmproject .'
-                        bat 'docker tag rohittrathod/ibmproject rohittrathod/ibmproject:latest'
-                        bat 'docker push rohittrathod/ibmproject:latest'
+                        bat 'docker build -t rohittrathod/ibm-project .'
+                        bat 'docker tag rohittrathod/ibm-project rohittrathod/ibm-project:latest'
+                        bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
             }
@@ -37,8 +37,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                 // Apply the Kubernetes deployment and service YAML files
-                       sh 'kubectl apply -f kubernetes/deployment.yaml --validate=false'  // Adjust the path as necessary
-                    sh 'kubectl apply -f kubernetes/service.yaml --validate=false'     // Adjust the path as necessary
+                       sh 'kubectl apply -f kubernetes/deployment.yaml '  // Adjust the path as necessary
+                    sh 'kubectl apply -f kubernetes/service.yaml '     // Adjust the path as necessary
             }
         } 
     }
