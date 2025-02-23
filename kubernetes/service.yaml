@@ -8,5 +8,5 @@ spec:
     app: ibmapp  # This should match the label in your deployment
   ports:
     - protocol: TCP
-      port: 8080  # Port that the service will expose
-      targetPort: 8080  # Port on the container that the service will forward to
+      port: 3000  # Port that the service will expose
+      targetPort: 3000  # Port on the container that the service will forward to

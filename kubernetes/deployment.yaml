@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ibmapp  # Changed to your desired deployment name
+  name: ibmapp  # Deployment name
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ibmapp  # Changed to your desired app label
+      app: ibmapp  # App label
   template:
     metadata:
       labels:
-        app: ibmapp  # Changed to your desired app label
+        app: ibmapp  # App label
     spec:
       containers:
-      - name: ibmapp-container  # Changed to your desired container name
-        image: rohittrathod/ibmproject:latest  # Change this to your Docker Hub image
+      - name: ibmapp-container  # Container name
+        image: rohittrathod/ibm-project:latest  # Docker Hub image
         ports:
-        - containerPort: 8080
+        - containerPort: 3000  # Port that the container listens on
