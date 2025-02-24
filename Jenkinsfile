@@ -32,18 +32,19 @@ pipeline {
                 }
             }
         }
+        stages {
         stage('Deploy to Minikube') {
-             steps {
+            steps {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
-                // Apply the Kubernetes deployment and service YAML files
-                     bat 'kubectl apply -f deployment.yaml --validate=false'  // Adjust the path as necessary
-                     bat 'kubectl apply -f service.yaml --validate=false'     // Adjust the path as necessary
+                        // Apply the Kubernetes deployment and service YAML files
+                        sh 'kubectl apply -f kubernetes/deployment.yaml'  // Adjust the path as necessary
+                        sh 'kubectl apply -f kubernetes/service.yaml'     // Adjust the path as necessary
+                    }
+                }
             }
-        } 
+        }
     }
-}
-
         stage('Slack Notification') {
             steps {
                 script {
