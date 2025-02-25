@@ -24,9 +24,8 @@ pipeline {
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
                     script {
                         // Log in to Docker Hub, build and push the Docker image
-                        bat "docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%"
-                        bat 'docker build -t rohittrathod/ibm-project .'
-                        bat 'docker tag rohittrathod/ibm-project rohittrathod/ibm-project:latest'
+                        bat "echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin"
+                        bat 'docker build -t rohittrathod/ibm-project -f app/Dockerfile app'
                         bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
@@ -38,8 +37,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                         // Apply the Kubernetes deployment and service YAML files
-                        bat 'kubectl apply -f deployment.yaml --validate=false'  // Adjust the path as necessary
-                        bat 'kubectl apply -f service.yaml --validate=false'     // Adjust the path as necessary
+                        bat 'kubectl apply -f deployment.yaml'  // Adjust the path as necessary
+                        bat 'kubectl apply -f service.yaml'     // Adjust the path as necessary
                     }
                 }
             }
@@ -64,8 +63,4 @@ pipeline {
         failure {
             // Sending failure message to Slack channel
             script {
-                slackSend(channel: '#internship', color: 'danger', message: "Build and deployment failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
-            }
-        }
-    }
-}
+                slackSend(channel: '#internship', color: 'danger', message: "
