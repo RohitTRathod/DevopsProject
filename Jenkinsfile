@@ -36,8 +36,8 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
-                        // Apply the Kubernetes deployment and service YAML files
-                        bat 'kubectl apply -f kubernetes/deployment.yaml'  // Adjust the path as necessary
+                     
+                        bat 'minikube service ibmapp-app-service'  
                            
                     }
                 }
