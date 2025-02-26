@@ -40,7 +40,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                      
-                        bat 'minikube service ibmapp-app-service'  
+                        bat 'kubectl apply -f kubernetes/deployment.yaml' 
+                        bat 'kubectl apply -f kubernetes/service.yaml'
                            
                     }
                 }
