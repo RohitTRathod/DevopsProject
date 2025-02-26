@@ -1,0 +1,18 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ibmapp-hpa  # Name of the HPA
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ibmapp  # Name of the deployment to scale
+  minReplicas: 1  # Minimum number of replicas
+  maxReplicas: 10  # Maximum number of replicas
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu  # Metric type
+      target:
+        type: Utilization
+        averageUtilization: 50  # Target average CPU utilization percentage
