@@ -1,6 +1,9 @@
 pipeline {
     agent any
-    
+    environment {
+        KUBECONFIG = 'C:\Users\admin\.kube\config' // Set the path to your kubeconfig file
+        
+    }
     stages {
         stage('Checkout') {
             steps {
