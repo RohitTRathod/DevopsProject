@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: ibmapp-container  # Container name
-        image: rohittrathod/ibm-project3:latest  # Docker Hub image
+        image: rohittrathod/ibm-project:latest  # Docker Hub image
         ports:
         - containerPort: 3000  # Port that the container listens on
         resources:

@@ -24,8 +24,8 @@ pipeline {
                     script {
                         // Log in to Docker Hub, build and push the Docker image
                         bat "echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin"
-                        bat 'docker build -t rohittrathod/ibm-project3 -f app/Dockerfile app'
-                        bat 'docker push rohittrathod/ibm-project3:latest'
+                        bat 'docker build -t rohittrathod/ibm-project . '
+                        bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
             }
@@ -61,5 +61,9 @@ pipeline {
         }
         failure {
             // Sending failure message to Slack channel
-            script {
-                slackSend(channel: '#internship', color: 'danger', message: "
+            slackSend(channel: '#internship', color: 'danger', message: "Build and deployment failed: 
+${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)") 
+            } 
+        } 
+    } 
+}
