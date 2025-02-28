@@ -26,7 +26,7 @@ pipeline {
                     script {
                         // Log in to Docker Hub, build and push the Docker image
                         bat "echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin"
-                        bat 'docker build -t rohittrathod/ibm-project -f app/Dockerfile app'
+                        bat 'docker build -t rohittrathod/ibm-project '
                         bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
