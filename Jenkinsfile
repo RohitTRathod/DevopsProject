@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    environment {
-        KUBECONFIG = 'C:\\Users\\admin\\.kube\\config' // Set the path to your kubeconfig file
-    }
     stages {
         stage('Checkout') {
             steps {
@@ -24,19 +21,22 @@ pipeline {
                                                   usernameVariable: 'DOCKER_USERNAME', 
                                                   passwordVariable: 'DOCKER_PASSWORD')]) {
                     script {
-                    
-                        bat 'docker build -t rohittrathod/ibm-project '
+                        
+                        bat 'docker tag rohittrathod/pretest rohittrathod/ibm-project:latest'
                         bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
             }
         }
-        
+
         stage('Deploy to Minikube') {
             steps {
-                script {
-                    bat 'kubectl apply -f kubernetes/deployment.yaml' 
-                    bat 'kubectl apply -f kubernetes/service.yaml'
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
+                    script {
+                        // Apply the Kubernetes deployment and service YAML files
+                        bat 'kubectl apply -f deployment.yaml --validate=false'  // Adjust the path as necessary
+                        bat 'kubectl apply -f service.yaml --validate=false'     // Adjust the path as necessary
+                    }
                 }
             }
         }
