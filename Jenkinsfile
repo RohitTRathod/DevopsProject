@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        KUBECONFIG = 'C:\\Users\\admin\\.kube\\config' // Set the path to your kubeconfig file
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -9,8 +12,7 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                // Change to the directory containing package.json if needed
-                dir('app') {  // Adjust 'app' to your actual directory
+                dir('app') {  // Change to the directory containing package.json
                     bat 'npm install'  // Use 'sh' instead of 'bat' for Linux agents
                 }
             }
@@ -24,45 +26,43 @@ pipeline {
                     script {
                         // Log in to Docker Hub, build and push the Docker image
                         bat "echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin"
-                        bat 'docker build -t rohittrathod/ibm-project . '
+                        bat 'docker build -t rohittrathod/ibm-project -f app/Dockerfile app'
                         bat 'docker push rohittrathod/ibm-project:latest'
                     }
                 }
             }
         }
         
-               stage('Deploy to Minikube') {
+        stage('Deploy to Minikube') {
             steps {
-                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
-                    script {
-                        // Apply the Kubernetes deployment and service YAML files
-                        bat 'kubectl apply -f kubernetes/deployment.yaml --validate=false'  // Adjust the path as necessary
-                        bat 'kubectl apply -f kubernetes/service.yaml --validate=false'     // Adjust the path as necessary
-                    }
+                script {
+                    bat 'kubectl apply -f kubernetes/deployment.yaml' 
+                    bat 'kubectl apply -f kubernetes/service.yaml'
                 }
             }
         }
 
-        stage('Slack Notification') {
-            steps {
-                script {
-                    // Send a Slack notification
-                    slackSend(channel: '#internship', color: 'good', message: "Successfully Completed ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL})")
-                }
-            }
-        }
-    }
-    post {
-        success {
-            // Sending success message to Slack channel
-            script {
-                slackSend(channel: '#internship', color: 'good', message: "Build and deployment succeeded: ${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)")
-            }
-        }
-        failure {
-            // Sending failure message to Slack channel
-            slackSend(channel: '#internship', color: 'danger', message: "Build and deployment failed: 
-${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)") 
+        stage('Slack Notification') { 
+            steps { 
+                script { 
+                    slackSend(channel: '#internship', color: 'good', message: """Successfully Completed 
+${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)""") 
+                } 
+            } 
+        } 
+    } 
+
+    post { 
+        success { 
+            script { 
+                slackSend(channel: '#internship', color: 'good', message: """Build and deployment succeeded: 
+${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)""") 
+            } 
+        } 
+        failure { 
+            script { 
+                slackSend(channel: '#internship', color: 'danger', message: """Build and deployment failed: 
+${env.JOB_NAME} [${env.BUILD_NUMBER}] (<${env.BUILD_URL}|Open>)""") 
             } 
         } 
     } 
