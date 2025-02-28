@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    environment {
-        KUBECONFIG = 'C:\Users\admin\.kube\config' // Set the path to your kubeconfig file
-        
-    }
     stages {
         stage('Checkout') {
             steps {
@@ -35,16 +31,15 @@ pipeline {
             }
         }
         
-        stage('Deploy to Minikube') {
+               stage('Deploy to Minikube') {
             steps {
-                
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
-                     
-                        bat 'kubectl apply -f kubernetes/deployment.yaml' 
-                        bat 'kubectl apply -f kubernetes/service.yaml'
-                           
+                        // Apply the Kubernetes deployment and service YAML files
+                        bat 'kubectl apply -f kubernetes/deployment.yaml --validate=false'  // Adjust the path as necessary
+                        bat 'kubectl apply -f kubernetes/service.yaml --validate=false'     // Adjust the path as necessary
                     }
-                
+                }
             }
         }
 
